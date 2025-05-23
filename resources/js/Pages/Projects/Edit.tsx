@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Link, useForm, Head, router } from "@inertiajs/react";
+import { Link, useForm, Head } from "@inertiajs/react";
 import { ArrowLeft } from "lucide-react";
 import { User } from "@/types";
 import {
@@ -24,34 +24,40 @@ import {
 } from "@/components/ui/select";
 import { DatePickerWithRange } from "@/components/ui/date-picker-with-range";
 import { DateRange } from "react-day-picker";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
-import { toast } from "sonner";
 
 interface Props {
     auth: {
         user: User;
     };
+    project: {
+        id: number;
+        name: string;
+        description: string;
+        status?: "planning" | "in_progress" | "completed";
+        start_date: string;
+        end_date: string;
+        manager_id?: number;
+    };
     users: User[];
 }
 
-export default function Create({ auth, users }: Props) {
-    const [dateRange, setDateRange] = React.useState<DateRange | undefined>();
-    const [dateError, setDateError] = React.useState<string>("");
+export default function Edit({ auth, project, users }: Props) {
+    const [dateRange, setDateRange] = React.useState<DateRange | undefined>({
+        from: project.start_date ? new Date(project.start_date) : undefined,
+        to: project.end_date ? new Date(project.end_date) : undefined,
+    });
 
-    const { data, setData, post, processing, errors, reset } = useForm({
-        name: "",
-        description: "",
-        status: "planning",
-        start_date: "",
-        end_date: "",
-        user_id: "",
+    const { data, setData, put, processing, errors } = useForm({
+        name: project.name,
+        description: project.description,
+        status: project.status || "planning",
+        start_date: project.start_date,
+        end_date: project.end_date,
+        manager_id: project.manager_id?.toString() || "",
     });
 
     const handleDateRangeChange = (range: DateRange | undefined) => {
         setDateRange(range);
-        setDateError("");
-
         if (range?.from) {
             setData("start_date", range.from.toISOString().split("T")[0]);
         }
@@ -62,27 +68,12 @@ export default function Create({ auth, users }: Props) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!dateRange?.from || !dateRange?.to) {
-            setDateError("Please select both start and end dates");
-            return;
-        }
-
-        post(route("projects.store"), {
-            onSuccess: () => {
-                toast.success("Project created successfully");
-                reset();
-                router.visit(route("projects.index"));
-            },
-            onError: (errors) => {
-                toast.error("Failed to create project");
-                console.error("Project creation errors:", errors);
-            },
-        });
+        put(route("projects.update", project.id));
     };
 
     return (
         <AuthenticatedLayout user={auth.user}>
-            <Head title="Create Project" />
+            <Head title="Edit Project" />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -93,9 +84,7 @@ export default function Create({ auth, users }: Props) {
                                 Back to Projects
                             </Link>
                         </Button>
-                        <h1 className="text-2xl font-semibold">
-                            Create Project
-                        </h1>
+                        <h1 className="text-2xl font-semibold">Edit Project</h1>
                     </div>
 
                     <Card>
@@ -103,7 +92,7 @@ export default function Create({ auth, users }: Props) {
                             <CardHeader>
                                 <CardTitle>Project Details</CardTitle>
                                 <CardDescription>
-                                    Fill in the project details below.
+                                    Update the project details below.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
@@ -147,13 +136,13 @@ export default function Create({ auth, users }: Props) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="user_id">
+                                    <Label htmlFor="manager_id">
                                         Project Manager
                                     </Label>
                                     <Select
-                                        value={data.user_id}
+                                        value={data.manager_id}
                                         onValueChange={(value) =>
-                                            setData("user_id", value)
+                                            setData("manager_id", value)
                                         }
                                     >
                                         <SelectTrigger>
@@ -170,9 +159,9 @@ export default function Create({ auth, users }: Props) {
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    {errors.user_id && (
+                                    {errors.manager_id && (
                                         <p className="text-sm text-red-500">
-                                            {errors.user_id}
+                                            {errors.manager_id}
                                         </p>
                                     )}
                                 </div>
@@ -216,14 +205,6 @@ export default function Create({ auth, users }: Props) {
                                         date={dateRange}
                                         onDateChange={handleDateRangeChange}
                                     />
-                                    {dateError && (
-                                        <Alert variant="destructive">
-                                            <AlertCircle className="h-4 w-4" />
-                                            <AlertDescription>
-                                                {dateError}
-                                            </AlertDescription>
-                                        </Alert>
-                                    )}
                                     {(errors.start_date || errors.end_date) && (
                                         <p className="text-sm text-red-500">
                                             {errors.start_date ||
@@ -236,13 +217,8 @@ export default function Create({ auth, users }: Props) {
                                 <Button variant="outline" asChild>
                                     <Link href="/projects">Cancel</Link>
                                 </Button>
-                                <Button
-                                    type="submit"
-                                    disabled={processing || !!dateError}
-                                >
-                                    {processing
-                                        ? "Creating..."
-                                        : "Create Project"}
+                                <Button type="submit" disabled={processing}>
+                                    {processing ? "Saving..." : "Save Changes"}
                                 </Button>
                             </CardFooter>
                         </form>

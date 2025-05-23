@@ -1,125 +1,157 @@
 import React from "react";
-import { Head } from "@inertiajs/react";
+import { Head, Link } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { useForm } from "@inertiajs/react";
-
-interface Task {
-    id: number;
-    title: string;
-    description: string;
-    status: "todo" | "in_progress" | "completed";
-    due_date: string;
-    assigned_to: {
-        id: number;
-        name: string;
-    };
-    project: {
-        id: number;
-        name: string;
-    };
-}
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
+import { ArrowLeft, Calendar, Users } from "lucide-react";
+import { formatDate } from "@/lib/utils";
+import { User } from "@/types";
+import { Badge } from "@/components/ui/badge";
 
 interface Props {
-    task: Task;
+    auth: {
+        user: User;
+    };
+    task: {
+        id: number;
+        title: string;
+        description: string;
+        status: "todo" | "in_progress" | "completed";
+        due_date: string;
+        project: {
+            id: number;
+            name: string;
+        };
+        assignee: {
+            id: number;
+            name: string;
+        } | null;
+    };
 }
 
-export default function Show({ task }: Props) {
-    const { data, setData, put, processing } = useForm<{
-        status: Task["status"];
-    }>({
-        status: task.status,
-    });
-
-    const handleStatusChange = (value: Task["status"]) => {
-        setData("status", value);
-        put(route("tasks.update", task.id));
-    };
-
+export default function Show({ auth, task }: Props) {
     return (
         <AuthenticatedLayout
+            user={auth.user}
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
                     Task Details
                 </h2>
             }
         >
-            <Head title={`Task: ${task.title}`} />
+            <Head title={task.title} />
 
             <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="mb-6">
-                        <Button
-                            variant="outline"
-                            onClick={() => window.history.back()}
-                        >
-                            Back to Project
+                        <Button variant="ghost" asChild className="mb-4">
+                            <Link href="/tasks">
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Back to Tasks
+                            </Link>
                         </Button>
+                        <div className="flex justify-between items-center">
+                            <h1 className="text-2xl font-semibold">
+                                {task.title}
+                            </h1>
+                            <Button variant="outline" asChild>
+                                <Link href={`/tasks/${task.id}/edit`}>
+                                    Edit Task
+                                </Link>
+                            </Button>
+                        </div>
                     </div>
 
-                    <Card className="p-6">
-                        <div className="mb-6">
-                            <h3 className="text-2xl font-bold">{task.title}</h3>
-                            <p className="mt-2 text-gray-600">
-                                {task.description}
-                            </p>
-                        </div>
+                    <div className="grid gap-6 md:grid-cols-2">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Task Information</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div>
+                                    <h3 className="text-sm font-medium mb-2">
+                                        Description
+                                    </h3>
+                                    <p className="text-gray-600">
+                                        {task.description}
+                                    </p>
+                                </div>
 
-                        <div className="grid gap-6 md:grid-cols-2">
-                            <div>
-                                <h4 className="mb-2 font-semibold">Project</h4>
-                                <p>{task.project.name}</p>
-                            </div>
+                                <div className="flex items-center space-x-4 text-sm text-gray-600">
+                                    <div className="flex items-center">
+                                        <Calendar className="w-4 h-4 mr-1" />
+                                        <span>
+                                            Due: {formatDate(task.due_date)}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <Users className="w-4 h-4 mr-1" />
+                                        <span>
+                                            Assigned to:{" "}
+                                            {task.assignee?.name ||
+                                                "Unassigned"}
+                                        </span>
+                                    </div>
+                                </div>
 
-                            <div>
-                                <h4 className="mb-2 font-semibold">
-                                    Assigned To
-                                </h4>
-                                <p>{task.assigned_to.name}</p>
-                            </div>
+                                <div>
+                                    <h3 className="text-sm font-medium mb-2">
+                                        Status
+                                    </h3>
+                                    <Badge
+                                        variant={
+                                            task.status === "completed"
+                                                ? "success"
+                                                : task.status === "in_progress"
+                                                ? "warning"
+                                                : "secondary"
+                                        }
+                                    >
+                                        {task.status.replace("_", " ")}
+                                    </Badge>
+                                </div>
+                            </CardContent>
+                        </Card>
 
-                            <div>
-                                <h4 className="mb-2 font-semibold">Due Date</h4>
-                                <p>
-                                    {new Date(
-                                        task.due_date
-                                    ).toLocaleDateString()}
-                                </p>
-                            </div>
-
-                            <div>
-                                <h4 className="mb-2 font-semibold">Status</h4>
-                                <Select
-                                    value={data.status}
-                                    onValueChange={handleStatusChange}
-                                    disabled={processing}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Project Information</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-4">
+                                    <div>
+                                        <h3 className="text-sm font-medium mb-2">
+                                            Project Name
+                                        </h3>
+                                        <Link
+                                            href={`/projects/${task.project.id}`}
+                                            className="text-primary hover:underline"
+                                        >
+                                            {task.project.name}
+                                        </Link>
+                                    </div>
+                                </div>
+                            </CardContent>
+                            <CardFooter>
+                                <Button
+                                    variant="outline"
+                                    className="w-full"
+                                    asChild
                                 >
-                                    <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder="Select status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="todo">
-                                            To Do
-                                        </SelectItem>
-                                        <SelectItem value="in_progress">
-                                            In Progress
-                                        </SelectItem>
-                                        <SelectItem value="completed">
-                                            Completed
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                    </Card>
+                                    <Link href={`/projects/${task.project.id}`}>
+                                        View Project
+                                    </Link>
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    </div>
                 </div>
             </div>
         </AuthenticatedLayout>

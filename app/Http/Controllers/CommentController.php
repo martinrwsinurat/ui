@@ -6,12 +6,13 @@ use App\Models\Comment;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class CommentController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth:api');
+        $this->middleware('auth');
     }
 
     public function index(Task $task)
@@ -21,64 +22,49 @@ class CommentController extends Controller
             ->latest()
             ->get();
 
-        return response()->json([
-            'status' => 'success',
+        return Inertia::render('Tasks/Show', [
+            'task' => $task->load(['assigned_to', 'project']),
             'comments' => $comments
         ]);
     }
 
     public function store(Request $request, Task $task)
     {
-        $request->validate([
+        $validated = $request->validate([
             'content' => 'required|string',
         ]);
 
         $comment = $task->comments()->create([
-            'content' => $request->content,
+            'content' => $validated['content'],
             'user_id' => Auth::id(),
         ]);
 
-        $comment->load('user');
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Comment created successfully',
-            'comment' => $comment
-        ], 201);
+        return back();
     }
 
     public function update(Request $request, Task $task, Comment $comment)
     {
         if ($comment->user_id !== Auth::id()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            abort(403);
         }
 
-        $request->validate([
+        $validated = $request->validate([
             'content' => 'required|string',
         ]);
 
-        $comment->update([
-            'content' => $request->content,
-        ]);
+        $comment->update($validated);
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Comment updated successfully',
-            'comment' => $comment
-        ]);
+        return back();
     }
 
     public function destroy(Task $task, Comment $comment)
     {
         if ($comment->user_id !== Auth::id()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            abort(403);
         }
 
         $comment->delete();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Comment deleted successfully'
-        ]);
+        return back();
     }
 } 

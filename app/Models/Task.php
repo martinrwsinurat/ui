@@ -14,16 +14,14 @@ class Task extends Model
     protected $fillable = [
         'title',
         'description',
-        'due_date',
-        'status',
-        'priority',
         'project_id',
         'assigned_to',
-        'created_by',
+        'status',
+        'due_date',
     ];
 
     protected $casts = [
-        'due_date' => 'datetime',
+        'due_date' => 'date',
     ];
 
     public function project(): BelongsTo
@@ -34,11 +32,6 @@ class Task extends Model
     public function assignee(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_to');
-    }
-
-    public function creator(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function comments(): HasMany

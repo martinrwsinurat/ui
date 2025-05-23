@@ -2,92 +2,131 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Task;
 use App\Models\Project;
+use App\Models\Task;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class TaskController extends Controller
 {
-    public function __construct()
+    public function index()
     {
-        $this->middleware('auth');
-    }
+        $tasks = Task::with(['project', 'assignee'])
+            ->get()
+            ->map(function ($task) {
+                return [
+                    'id' => $task->id,
+                    'title' => $task->title,
+                    'description' => $task->description,
+                    'status' => $task->status,
+                    'due_date' => $task->due_date,
+                    'project' => [
+                        'id' => $task->project->id,
+                        'name' => $task->project->name,
+                    ],
+                    'assignee' => $task->assignee ? [
+                        'id' => $task->assignee->id,
+                        'name' => $task->assignee->name,
+                    ] : null,
+                ];
+            });
 
-    public function index(Project $project)
-    {
-        $tasks = $project->tasks()
-            ->with(['assigned_to', 'project'])
-            ->get();
-
-        return Inertia::render('Projects/Show', [
-            'project' => $project->load('tasks'),
+        return Inertia::render('Tasks/Index', [
+            'tasks' => $tasks,
         ]);
     }
 
-    public function store(Request $request, Project $project)
+    public function create(Request $request)
+    {
+        $projectId = $request->query('project_id');
+        $project = null;
+
+        if ($projectId) {
+            $project = Project::findOrFail($projectId);
+        }
+
+        return Inertia::render('Tasks/Create', [
+            'users' => User::select('id', 'name')->get(),
+            'projects' => Project::select('id', 'name')->get(),
+            'selectedProject' => $project ? [
+                'id' => $project->id,
+                'name' => $project->name,
+            ] : null,
+        ]);
+    }
+
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'due_date' => 'required|date',
+            'description' => 'required|string',
+            'project_id' => 'required|exists:projects,id',
             'assigned_to' => 'required|exists:users,id',
+            'status' => 'required|in:todo,in_progress,completed',
+            'due_date' => 'required|date',
         ]);
 
-        $task = $project->tasks()->create([
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'due_date' => $validated['due_date'],
-            'assigned_to' => $validated['assigned_to'],
-            'status' => 'todo',
-        ]);
+        Task::create($validated);
 
-        return redirect()->back();
+        return redirect()->route('tasks.index')
+            ->with('success', 'Task created successfully.');
     }
 
     public function show(Task $task)
     {
+        $task->load(['project', 'assignee']);
+
         return Inertia::render('Tasks/Show', [
-            'task' => $task->load(['assigned_to', 'project']),
+            'task' => [
+                'id' => $task->id,
+                'title' => $task->title,
+                'description' => $task->description,
+                'status' => $task->status,
+                'due_date' => $task->due_date,
+                'project' => [
+                    'id' => $task->project->id,
+                    'name' => $task->project->name,
+                ],
+                'assignee' => $task->assignee ? [
+                    'id' => $task->assignee->id,
+                    'name' => $task->assignee->name,
+                ] : null,
+            ],
+        ]);
+    }
+
+    public function edit(Task $task)
+    {
+        return Inertia::render('Tasks/Edit', [
+            'task' => $task,
+            'users' => User::select('id', 'name')->get(),
+            'projects' => Project::select('id', 'name')->get(),
         ]);
     }
 
     public function update(Request $request, Task $task)
     {
         $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'project_id' => 'required|exists:projects,id',
+            'assigned_to' => 'required|exists:users,id',
             'status' => 'required|in:todo,in_progress,completed',
+            'due_date' => 'required|date',
         ]);
 
         $task->update($validated);
 
-        return back();
+        return redirect()->route('tasks.index')
+            ->with('success', 'Task updated successfully.');
     }
 
     public function destroy(Task $task)
     {
         $task->delete();
-        return back();
-    }
 
-    public function updateStatus(Request $request, Project $project, Task $task)
-    {
-        $user = Auth::user();
-        
-        if (!$user->can('update tasks') && $task->assigned_to !== $user->id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        $request->validate([
-            'status' => 'required|in:todo,in_progress,done',
-        ]);
-
-        $task->update(['status' => $request->status]);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Task status updated successfully',
-            'task' => $task
-        ]);
+        return redirect()->route('tasks.index')
+            ->with('success', 'Task deleted successfully.');
     }
 } 

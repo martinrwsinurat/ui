@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Link, useForm, Head, router } from "@inertiajs/react";
+import { Link, useForm, Head } from "@inertiajs/react";
 import { ArrowLeft } from "lucide-react";
 import { User } from "@/types";
 import {
@@ -25,11 +25,19 @@ import {
 import { DatePicker } from "@/components/ui/date-picker";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { toast } from "sonner";
 
 interface Props {
     auth: {
         user: User;
+    };
+    task: {
+        id: number;
+        title: string;
+        description: string;
+        status: "todo" | "in_progress" | "completed";
+        due_date: string;
+        project_id: number;
+        assigned_to: number;
     };
     users: User[];
     projects: {
@@ -40,18 +48,20 @@ interface Props {
     }[];
 }
 
-export default function Create({ auth, users, projects }: Props) {
-    const [date, setDate] = React.useState<Date | undefined>();
-    const [dateError, setDateError] = React.useState<string>("");
-
-    const { data, setData, post, processing, errors, reset } = useForm({
-        title: "",
-        description: "",
-        project_id: "",
-        assigned_to: "",
-        status: "todo",
-        due_date: "",
+export default function Edit({ auth, task, users, projects }: Props) {
+    const { data, setData, put, processing, errors } = useForm({
+        title: task.title,
+        description: task.description,
+        project_id: task.project_id.toString(),
+        assigned_to: task.assigned_to.toString(),
+        status: task.status,
+        due_date: task.due_date,
     });
+
+    const [date, setDate] = React.useState<Date | undefined>(
+        task.due_date ? new Date(task.due_date) : undefined
+    );
+    const [dateError, setDateError] = React.useState<string>("");
 
     const selectedProject = projects.find(
         (p) => p.id === parseInt(data.project_id)
@@ -108,31 +118,12 @@ export default function Create({ auth, users, projects }: Props) {
         if (dateError) {
             return;
         }
-        if (!data.project_id) {
-            setDateError("Please select a project first");
-            return;
-        }
-        if (!date) {
-            setDateError("Please select a due date");
-            return;
-        }
-
-        post(route("tasks.store"), {
-            onSuccess: () => {
-                toast.success("Task created successfully");
-                reset();
-                router.visit(route("tasks.index"));
-            },
-            onError: (errors) => {
-                toast.error("Failed to create task");
-                console.error("Task creation errors:", errors);
-            },
-        });
+        put(route("tasks.update", task.id));
     };
 
     return (
         <AuthenticatedLayout user={auth.user}>
-            <Head title="Create Task" />
+            <Head title="Edit Task" />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -143,7 +134,7 @@ export default function Create({ auth, users, projects }: Props) {
                                 Back to Tasks
                             </Link>
                         </Button>
-                        <h1 className="text-2xl font-semibold">Create Task</h1>
+                        <h1 className="text-2xl font-semibold">Edit Task</h1>
                     </div>
 
                     <Card>
@@ -151,7 +142,7 @@ export default function Create({ auth, users, projects }: Props) {
                             <CardHeader>
                                 <CardTitle>Task Details</CardTitle>
                                 <CardDescription>
-                                    Fill in the task details below.
+                                    Update the task details below.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
@@ -314,7 +305,7 @@ export default function Create({ auth, users, projects }: Props) {
                                     type="submit"
                                     disabled={processing || !!dateError}
                                 >
-                                    {processing ? "Creating..." : "Create Task"}
+                                    {processing ? "Saving..." : "Save Changes"}
                                 </Button>
                             </CardFooter>
                         </form>

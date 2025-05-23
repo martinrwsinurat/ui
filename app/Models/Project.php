@@ -14,24 +14,41 @@ class Project extends Model
     protected $fillable = [
         'name',
         'description',
+        'user_id',
         'start_date',
         'end_date',
-        'status',
-        'created_by',
     ];
 
     protected $casts = [
-        'start_date' => 'datetime',
-        'end_date' => 'datetime',
+        'start_date' => 'date',
+        'end_date' => 'date',
     ];
 
-    public function creator(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(User::class);
     }
 
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
+    }
+
+    public function getTasksCountAttribute(): int
+    {
+        return $this->tasks()->count();
+    }
+
+    public function getCompletedTasksCountAttribute(): int
+    {
+        return $this->tasks()->where('status', 'completed')->count();
+    }
+
+    public function getMembersCountAttribute(): int
+    {
+        return $this->tasks()
+            ->select('assigned_to')
+            ->distinct()
+            ->count();
     }
 } 
