@@ -43,4 +43,14 @@ class Task extends Model
     {
         return $this->hasMany(TaskAttachment::class);
     }
+
+    public function addAttachment($filename, $path, $type)
+    {
+        return $this->attachments()->create([
+            'filename' => $filename,
+            'path' => $path,
+            'type' => $type,
+            'uploaded_at' => now(),
+        ]);
+    }
 } 

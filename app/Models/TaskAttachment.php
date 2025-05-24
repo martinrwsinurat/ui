@@ -10,10 +10,15 @@ use Illuminate\Support\Facades\Storage;
 class TaskAttachment extends Model
 {
     protected $fillable = [
-        'task_id',
         'filename',
         'path',
         'type',
+    ];
+
+    protected $casts = [
+        'uploaded_at' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function task(): BelongsTo

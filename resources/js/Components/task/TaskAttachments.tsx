@@ -29,6 +29,7 @@ interface TaskAttachment {
     path: string;
     type: string;
     uploaded_at: string;
+    created_at: string;
     comments: TaskComment[];
 }
 
@@ -285,9 +286,25 @@ export function TaskAttachments({
                                     </TableCell>
                                     <TableCell>{attachment.type}</TableCell>
                                     <TableCell>
-                                        {new Date(
-                                            attachment.uploaded_at
-                                        ).toLocaleDateString()}
+                                        {attachment.uploaded_at
+                                            ? new Date(
+                                                  attachment.uploaded_at
+                                              ).toLocaleDateString("en-US", {
+                                                  year: "numeric",
+                                                  month: "long",
+                                                  day: "numeric",
+                                                  hour: "2-digit",
+                                                  minute: "2-digit",
+                                              })
+                                            : new Date(
+                                                  attachment.created_at
+                                              ).toLocaleDateString("en-US", {
+                                                  year: "numeric",
+                                                  month: "long",
+                                                  day: "numeric",
+                                                  hour: "2-digit",
+                                                  minute: "2-digit",
+                                              })}
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex justify-end gap-2">
