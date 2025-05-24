@@ -1,10 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { addDays, format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon } from "lucide-react";
 import { DateRange } from "react-day-picker";
-
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -14,8 +12,8 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 
-interface DatePickerWithRangeProps
-    extends React.HTMLAttributes<HTMLDivElement> {
+interface DatePickerWithRangeProps {
+    className?: string;
     date: DateRange | undefined;
     onDateChange: (date: DateRange | undefined) => void;
 }
@@ -25,6 +23,27 @@ export function DatePickerWithRange({
     date,
     onDateChange,
 }: DatePickerWithRangeProps) {
+    const formatDate = (date: Date) => {
+        const months = [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+        ];
+        const month = months[date.getMonth()];
+        const day = date.getDate();
+        const year = date.getFullYear();
+        return `${month} ${day}, ${year}`;
+    };
+
     return (
         <div className={cn("grid gap-2", className)}>
             <Popover>
@@ -41,11 +60,11 @@ export function DatePickerWithRange({
                         {date?.from ? (
                             date.to ? (
                                 <>
-                                    {format(date.from, "LLL dd, y")} -{" "}
-                                    {format(date.to, "LLL dd, y")}
+                                    {formatDate(date.from)} -{" "}
+                                    {formatDate(date.to)}
                                 </>
                             ) : (
-                                format(date.from, "LLL dd, y")
+                                formatDate(date.from)
                             )
                         ) : (
                             <span>Pick a date range</span>

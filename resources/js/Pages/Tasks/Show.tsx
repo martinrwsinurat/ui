@@ -14,16 +14,14 @@ import { ArrowLeft, Calendar, Users } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { User } from "@/types";
 import { Badge } from "@/components/ui/badge";
+import { TaskAttachments } from "@/components/task/TaskAttachments";
 
 interface Props {
-    auth: {
-        user: User;
-    };
     task: {
         id: number;
         title: string;
         description: string;
-        status: "todo" | "in_progress" | "completed";
+        status: string;
         due_date: string;
         project: {
             id: number;
@@ -33,6 +31,26 @@ interface Props {
             id: number;
             name: string;
         } | null;
+        attachments: {
+            id: number;
+            filename: string;
+            path: string;
+            type: string;
+            uploaded_at: string;
+            comments: {
+                id: number;
+                content: string;
+                user: {
+                    id: number;
+                    name: string;
+                    avatar?: string;
+                };
+                created_at: string;
+            }[];
+        }[];
+    };
+    auth: {
+        user: User;
     };
 }
 
@@ -151,6 +169,14 @@ export default function Show({ auth, task }: Props) {
                                 </Button>
                             </CardFooter>
                         </Card>
+                    </div>
+
+                    <div className="mt-6">
+                        <TaskAttachments
+                            attachments={task.attachments}
+                            taskId={task.id}
+                            currentUser={auth.user}
+                        />
                     </div>
                 </div>
             </div>

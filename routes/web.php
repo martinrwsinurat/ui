@@ -5,6 +5,8 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\TestCloudinaryController;
+use App\Http\Controllers\TaskAttachmentController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -46,6 +48,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Project routes
     Route::resource('projects', ProjectController::class);
+    Route::post('projects/{project}/attachments', [ProjectController::class, 'addAttachment'])->name('projects.attachments.store');
+    Route::delete('projects/{project}/attachments/{index}', [ProjectController::class, 'removeAttachment'])->name('projects.attachments.destroy');
+    Route::post('projects/{project}/tags', [ProjectController::class, 'addTag'])->name('projects.tags.store');
+    Route::delete('projects/{project}/tags/{tag}', [ProjectController::class, 'removeTag'])->name('projects.tags.destroy');
+    Route::post('projects/{project}/duplicate-template', [ProjectController::class, 'duplicateAsTemplate'])->name('projects.duplicate-template');
+    Route::post('projects/{project}/budget', [ProjectController::class, 'updateBudget'])->name('projects.budget.update');
+    Route::post('projects/{project}/calculate-progress', [ProjectController::class, 'calculateProgress'])->name('projects.calculate-progress');
     
     // Task routes
     Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
@@ -55,6 +64,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/tasks/{task}/edit', [TaskController::class, 'edit'])->name('tasks.edit');
     Route::put('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
     Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
+
+    // Task Attachments
+    Route::post('/tasks/{task}/attachments', [TaskAttachmentController::class, 'store'])->name('tasks.attachments.store');
+    Route::delete('/tasks/{task}/attachments/{attachment}', [TaskAttachmentController::class, 'destroy'])->name('tasks.attachments.destroy');
+    Route::post('/tasks/{task}/attachments/{attachment}/comments', [TaskAttachmentController::class, 'storeComment'])->name('tasks.attachments.comments.store');
 });
+
+Route::get('/test-cloudinary', [TestCloudinaryController::class, 'test']);
 
 require __DIR__.'/auth.php'; 

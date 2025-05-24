@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Link, useForm, Head, router } from "@inertiajs/react";
+import { Link, useForm, Head } from "@inertiajs/react";
 import { ArrowLeft } from "lucide-react";
 import { User } from "@/types";
 import {
@@ -24,34 +24,37 @@ import {
 } from "@/components/ui/select";
 import { DatePickerWithRange } from "@/components/ui/date-picker-with-range";
 import { DateRange } from "react-day-picker";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
-import { toast } from "sonner";
+import { TagInput } from "@/components/project/TagInput";
 
 interface Props {
+    users: User[];
     auth: {
         user: User;
     };
-    users: User[];
 }
 
-export default function Create({ auth, users }: Props) {
+export default function Create({ users, auth }: Props) {
     const [dateRange, setDateRange] = React.useState<DateRange | undefined>();
-    const [dateError, setDateError] = React.useState<string>("");
 
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         name: "",
         description: "",
-        status: "planning",
         start_date: "",
         end_date: "",
-        user_id: "",
+        budget: "",
+        category: "",
+        tags: [] as string[],
+        is_template: false,
+        user_id: auth.user.id.toString(),
     });
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        post(route("projects.store"));
+    };
 
     const handleDateRangeChange = (range: DateRange | undefined) => {
         setDateRange(range);
-        setDateError("");
-
         if (range?.from) {
             setData("start_date", range.from.toISOString().split("T")[0]);
         }
@@ -60,24 +63,8 @@ export default function Create({ auth, users }: Props) {
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!dateRange?.from || !dateRange?.to) {
-            setDateError("Please select both start and end dates");
-            return;
-        }
-
-        post(route("projects.store"), {
-            onSuccess: () => {
-                toast.success("Project created successfully");
-                reset();
-                router.visit(route("projects.index"));
-            },
-            onError: (errors) => {
-                toast.error("Failed to create project");
-                console.error("Project creation errors:", errors);
-            },
-        });
+    const handleTagsChange = (newTags: string[]) => {
+        setData("tags", newTags);
     };
 
     return (
@@ -178,52 +165,11 @@ export default function Create({ auth, users }: Props) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="status">Status</Label>
-                                    <Select
-                                        value={data.status}
-                                        onValueChange={(
-                                            value:
-                                                | "planning"
-                                                | "in_progress"
-                                                | "completed"
-                                        ) => setData("status", value)}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select status" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="planning">
-                                                Planning
-                                            </SelectItem>
-                                            <SelectItem value="in_progress">
-                                                In Progress
-                                            </SelectItem>
-                                            <SelectItem value="completed">
-                                                Completed
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    {errors.status && (
-                                        <p className="text-sm text-red-500">
-                                            {errors.status}
-                                        </p>
-                                    )}
-                                </div>
-
-                                <div className="space-y-2">
                                     <Label>Project Timeline</Label>
                                     <DatePickerWithRange
                                         date={dateRange}
                                         onDateChange={handleDateRangeChange}
                                     />
-                                    {dateError && (
-                                        <Alert variant="destructive">
-                                            <AlertCircle className="h-4 w-4" />
-                                            <AlertDescription>
-                                                {dateError}
-                                            </AlertDescription>
-                                        </Alert>
-                                    )}
                                     {(errors.start_date || errors.end_date) && (
                                         <p className="text-sm text-red-500">
                                             {errors.start_date ||
@@ -231,15 +177,80 @@ export default function Create({ auth, users }: Props) {
                                         </p>
                                     )}
                                 </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="budget">Budget</Label>
+                                    <Input
+                                        id="budget"
+                                        type="number"
+                                        step="0.01"
+                                        value={data.budget}
+                                        onChange={(e) =>
+                                            setData("budget", e.target.value)
+                                        }
+                                    />
+                                    {errors.budget && (
+                                        <p className="text-sm text-red-500">
+                                            {errors.budget}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="category">Category</Label>
+                                    <Input
+                                        id="category"
+                                        value={data.category}
+                                        onChange={(e) =>
+                                            setData("category", e.target.value)
+                                        }
+                                    />
+                                    {errors.category && (
+                                        <p className="text-sm text-red-500">
+                                            {errors.category}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <TagInput
+                                    tags={data.tags}
+                                    onTagsChange={handleTagsChange}
+                                />
+                                {errors.tags && (
+                                    <p className="text-sm text-red-500">
+                                        {errors.tags}
+                                    </p>
+                                )}
+
+                                <div className="space-y-2">
+                                    <Label>Template</Label>
+                                    <div className="flex items-center space-x-2">
+                                        <input
+                                            type="checkbox"
+                                            id="is_template"
+                                            checked={data.is_template}
+                                            onChange={(e) =>
+                                                setData(
+                                                    "is_template",
+                                                    e.target.checked
+                                                )
+                                            }
+                                            className="h-4 w-4 rounded border-gray-300"
+                                        />
+                                        <Label
+                                            htmlFor="is_template"
+                                            className="text-sm font-normal"
+                                        >
+                                            Save as template
+                                        </Label>
+                                    </div>
+                                </div>
                             </CardContent>
                             <CardFooter className="flex justify-end space-x-4">
                                 <Button variant="outline" asChild>
                                     <Link href="/projects">Cancel</Link>
                                 </Button>
-                                <Button
-                                    type="submit"
-                                    disabled={processing || !!dateError}
-                                >
+                                <Button type="submit" disabled={processing}>
                                     {processing
                                         ? "Creating..."
                                         : "Create Project"}

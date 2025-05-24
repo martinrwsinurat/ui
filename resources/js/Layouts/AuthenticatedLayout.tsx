@@ -4,6 +4,7 @@ import { Link } from "@inertiajs/react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Toaster } from "sonner";
+import { Head } from "@inertiajs/react";
 
 interface Props {
     user: User;
@@ -17,6 +18,12 @@ export default function Authenticated({
 }: PropsWithChildren<Props>) {
     return (
         <div className="min-h-screen bg-gray-100">
+            <Head>
+                <meta
+                    name="cloudinary-cloud-name"
+                    content={import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}
+                />
+            </Head>
             <Toaster position="top-right" />
             <nav className="bg-white border-b border-gray-100">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

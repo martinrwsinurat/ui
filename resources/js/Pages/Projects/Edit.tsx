@@ -24,40 +24,51 @@ import {
 } from "@/components/ui/select";
 import { DatePickerWithRange } from "@/components/ui/date-picker-with-range";
 import { DateRange } from "react-day-picker";
+import { TagInput } from "@/components/project/TagInput";
 
 interface Props {
-    auth: {
-        user: User;
-    };
     project: {
         id: number;
         name: string;
         description: string;
-        status?: "planning" | "in_progress" | "completed";
         start_date: string;
         end_date: string;
-        manager_id?: number;
+        status: "not_started" | "in_progress" | "on_hold" | "completed";
+        budget: number | null;
+        category: string | null;
+        tags: string[];
+        is_template: boolean;
     };
-    users: User[];
+    auth: {
+        user: User;
+    };
 }
 
-export default function Edit({ auth, project, users }: Props) {
-    const [dateRange, setDateRange] = React.useState<DateRange | undefined>({
-        from: project.start_date ? new Date(project.start_date) : undefined,
-        to: project.end_date ? new Date(project.end_date) : undefined,
+export default function Edit({ project, auth }: Props) {
+    const [dateRange, setDateRange] = React.useState<DateRange>({
+        from: new Date(project.start_date),
+        to: new Date(project.end_date),
     });
 
     const { data, setData, put, processing, errors } = useForm({
         name: project.name,
         description: project.description,
-        status: project.status || "planning",
         start_date: project.start_date,
         end_date: project.end_date,
-        manager_id: project.manager_id?.toString() || "",
+        status: project.status,
+        budget: project.budget?.toString() || "",
+        category: project.category || "",
+        tags: project.tags,
+        is_template: project.is_template,
     });
 
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        put(route("projects.update", project.id));
+    };
+
     const handleDateRangeChange = (range: DateRange | undefined) => {
-        setDateRange(range);
+        setDateRange(range || { from: undefined, to: undefined });
         if (range?.from) {
             setData("start_date", range.from.toISOString().split("T")[0]);
         }
@@ -66,22 +77,21 @@ export default function Edit({ auth, project, users }: Props) {
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        put(route("projects.update", project.id));
+    const handleTagsChange = (newTags: string[]) => {
+        setData("tags", newTags);
     };
 
     return (
         <AuthenticatedLayout user={auth.user}>
-            <Head title="Edit Project" />
+            <Head title={`Edit ${project.name}`} />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="mb-6">
                         <Button variant="ghost" asChild className="mb-4">
-                            <Link href="/projects">
+                            <Link href={route("projects.show", project.id)}>
                                 <ArrowLeft className="mr-2 h-4 w-4" />
-                                Back to Projects
+                                Back to Project
                             </Link>
                         </Button>
                         <h1 className="text-2xl font-semibold">Edit Project</h1>
@@ -136,44 +146,14 @@ export default function Edit({ auth, project, users }: Props) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="manager_id">
-                                        Project Manager
-                                    </Label>
-                                    <Select
-                                        value={data.manager_id}
-                                        onValueChange={(value) =>
-                                            setData("manager_id", value)
-                                        }
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select a manager" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {users.map((user) => (
-                                                <SelectItem
-                                                    key={user.id}
-                                                    value={user.id.toString()}
-                                                >
-                                                    {user.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    {errors.manager_id && (
-                                        <p className="text-sm text-red-500">
-                                            {errors.manager_id}
-                                        </p>
-                                    )}
-                                </div>
-
-                                <div className="space-y-2">
                                     <Label htmlFor="status">Status</Label>
                                     <Select
                                         value={data.status}
                                         onValueChange={(
                                             value:
-                                                | "planning"
+                                                | "not_started"
                                                 | "in_progress"
+                                                | "on_hold"
                                                 | "completed"
                                         ) => setData("status", value)}
                                     >
@@ -181,11 +161,14 @@ export default function Edit({ auth, project, users }: Props) {
                                             <SelectValue placeholder="Select status" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="planning">
-                                                Planning
+                                            <SelectItem value="not_started">
+                                                Not Started
                                             </SelectItem>
                                             <SelectItem value="in_progress">
                                                 In Progress
+                                            </SelectItem>
+                                            <SelectItem value="on_hold">
+                                                On Hold
                                             </SelectItem>
                                             <SelectItem value="completed">
                                                 Completed
@@ -212,10 +195,85 @@ export default function Edit({ auth, project, users }: Props) {
                                         </p>
                                     )}
                                 </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="budget">Budget</Label>
+                                    <Input
+                                        id="budget"
+                                        type="number"
+                                        step="0.01"
+                                        value={data.budget}
+                                        onChange={(e) =>
+                                            setData("budget", e.target.value)
+                                        }
+                                    />
+                                    {errors.budget && (
+                                        <p className="text-sm text-red-500">
+                                            {errors.budget}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="category">Category</Label>
+                                    <Input
+                                        id="category"
+                                        value={data.category}
+                                        onChange={(e) =>
+                                            setData("category", e.target.value)
+                                        }
+                                    />
+                                    {errors.category && (
+                                        <p className="text-sm text-red-500">
+                                            {errors.category}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <TagInput
+                                    tags={data.tags}
+                                    onTagsChange={handleTagsChange}
+                                />
+                                {errors.tags && (
+                                    <p className="text-sm text-red-500">
+                                        {errors.tags}
+                                    </p>
+                                )}
+
+                                <div className="space-y-2">
+                                    <Label>Template</Label>
+                                    <div className="flex items-center space-x-2">
+                                        <input
+                                            type="checkbox"
+                                            id="is_template"
+                                            checked={data.is_template}
+                                            onChange={(e) =>
+                                                setData(
+                                                    "is_template",
+                                                    e.target.checked
+                                                )
+                                            }
+                                            className="h-4 w-4 rounded border-gray-300"
+                                        />
+                                        <Label
+                                            htmlFor="is_template"
+                                            className="text-sm font-normal"
+                                        >
+                                            Save as template
+                                        </Label>
+                                    </div>
+                                </div>
                             </CardContent>
                             <CardFooter className="flex justify-end space-x-4">
                                 <Button variant="outline" asChild>
-                                    <Link href="/projects">Cancel</Link>
+                                    <Link
+                                        href={route(
+                                            "projects.show",
+                                            project.id
+                                        )}
+                                    >
+                                        Cancel
+                                    </Link>
                                 </Button>
                                 <Button type="submit" disabled={processing}>
                                     {processing ? "Saving..." : "Save Changes"}

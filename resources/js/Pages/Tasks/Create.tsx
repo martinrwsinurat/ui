@@ -26,18 +26,21 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { TaskAttachments } from "@/components/task/TaskAttachments";
+
+interface Project {
+    id: number;
+    name: string;
+    start_date: string;
+    end_date: string;
+}
 
 interface Props {
+    projects: Project[];
+    users: User[];
     auth: {
         user: User;
     };
-    users: User[];
-    projects: {
-        id: number;
-        name: string;
-        start_date: string;
-        end_date: string;
-    }[];
 }
 
 export default function Create({ auth, users, projects }: Props) {
@@ -304,6 +307,14 @@ export default function Create({ auth, users, projects }: Props) {
                                             {errors.due_date}
                                         </p>
                                     )}
+                                </div>
+
+                                <div className="mt-6">
+                                    <TaskAttachments
+                                        attachments={[]}
+                                        taskId={0}
+                                        currentUser={auth.user}
+                                    />
                                 </div>
                             </CardContent>
                             <CardFooter className="flex justify-end space-x-4">

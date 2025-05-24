@@ -27,25 +27,37 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
 interface Props {
-    auth: {
-        user: User;
-    };
     task: {
         id: number;
         title: string;
         description: string;
-        status: "todo" | "in_progress" | "completed";
+        status: string;
         due_date: string;
         project_id: number;
-        assigned_to: number;
+        assigned_to: number | null;
+        attachments: {
+            id: number;
+            filename: string;
+            path: string;
+            type: string;
+            uploaded_at: string;
+            comments: {
+                id: number;
+                content: string;
+                user: {
+                    id: number;
+                    name: string;
+                    avatar?: string;
+                };
+                created_at: string;
+            }[];
+        }[];
     };
+    projects: Project[];
     users: User[];
-    projects: {
-        id: number;
-        name: string;
-        start_date: string;
-        end_date: string;
-    }[];
+    auth: {
+        user: User;
+    };
 }
 
 export default function Edit({ auth, task, users, projects }: Props) {
@@ -53,7 +65,7 @@ export default function Edit({ auth, task, users, projects }: Props) {
         title: task.title,
         description: task.description,
         project_id: task.project_id.toString(),
-        assigned_to: task.assigned_to.toString(),
+        assigned_to: task.assigned_to?.toString() || "",
         status: task.status,
         due_date: task.due_date,
     });

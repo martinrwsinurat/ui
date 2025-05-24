@@ -8,7 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // Tambahkan ini
-
+use Illuminate\Support\Facades\Storage;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class ProjectController extends Controller
 {
@@ -20,37 +21,7 @@ class ProjectController extends Controller
 
     public function index()
     {
-        $projects = Project::with(['tasks.assignee'])
-            ->get()
-            ->map(function ($project) {
-                $completedTasks = $project->tasks->where('status', 'completed')->count();
-                $progress = $project->tasks->count() > 0
-                    ? round(($completedTasks / $project->tasks->count()) * 100)
-                    : 0;
-
-                return [
-                    'id' => $project->id,
-                    'name' => $project->name,
-                    'description' => $project->description,
-                    'start_date' => $project->start_date,
-                    'end_date' => $project->end_date,
-                    'progress' => $progress,
-                    'tasks' => $project->tasks->map(function ($task) {
-                        return [
-                            'id' => $task->id,
-                            'title' => $task->title,
-                            'description' => $task->description,
-                            'status' => $task->status,
-                            'due_date' => $task->due_date,
-                            'assigned_to' => $task->assignee ? [
-                                'id' => $task->assignee->id,
-                                'name' => $task->assignee->name,
-                            ] : null,
-                        ];
-                    }),
-                ];
-            });
-
+        $projects = Project::with('tasks')->get();
         return Inertia::render('Projects/Index', [
             'projects' => $projects,
         ]);
@@ -60,6 +31,9 @@ class ProjectController extends Controller
     {
         return Inertia::render('Projects/Create', [
             'users' => User::select('id', 'name')->get(),
+            'auth' => [
+                'user' => Auth::user()
+            ]
         ]);
     }
 
@@ -69,11 +43,27 @@ class ProjectController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'start_date' => 'required|date',
-            'end_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+            'budget' => 'nullable|numeric|min:0',
+            'category' => 'nullable|string|max:255',
+            'tags' => 'nullable|array',
+            'tags.*' => 'string|max:255',
+            'is_template' => 'boolean',
             'user_id' => 'required|exists:users,id',
         ]);
 
-        Project::create($validated);
+        $project = Project::create($validated);
+
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $path = $file->store('project-attachments');
+                $project->addAttachment(
+                    $file->getClientOriginalName(),
+                    $path,
+                    $file->getMimeType()
+                );
+            }
+        }
 
         return redirect()->route('projects.index')
             ->with('success', 'Project created successfully.');
@@ -81,35 +71,9 @@ class ProjectController extends Controller
 
     public function show(Project $project)
     {
-        $project->load(['tasks.assignee']);
-
-        $completedTasks = $project->tasks->where('status', 'completed')->count();
-        $progress = $project->tasks->count() > 0
-            ? round(($completedTasks / $project->tasks->count()) * 100)
-            : 0;
-
+        $project->load('tasks');
         return Inertia::render('Projects/Show', [
-            'project' => [
-                'id' => $project->id,
-                'name' => $project->name,
-                'description' => $project->description,
-                'start_date' => $project->start_date,
-                'end_date' => $project->end_date,
-                'progress' => $progress,
-                'tasks' => $project->tasks->map(function ($task) {
-                    return [
-                        'id' => $task->id,
-                        'title' => $task->title,
-                        'description' => $task->description,
-                        'status' => $task->status,
-                        'due_date' => $task->due_date,
-                        'assigned_to' => $task->assignee ? [
-                            'id' => $task->assignee->id,
-                            'name' => $task->assignee->name,
-                        ] : null,
-                    ];
-                }),
-            ],
+            'project' => $project,
         ]);
     }
 
@@ -117,7 +81,6 @@ class ProjectController extends Controller
     {
         return Inertia::render('Projects/Edit', [
             'project' => $project,
-            'users' => User::select('id', 'name')->get(),
         ]);
     }
 
@@ -127,21 +90,137 @@ class ProjectController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'start_date' => 'required|date',
-            'end_date' => 'required|date',
-            'user_id' => 'required|exists:users,id',
+            'end_date' => 'required|date|after:start_date',
+            'status' => 'required|in:not_started,in_progress,on_hold,completed',
+            'budget' => 'nullable|numeric|min:0',
+            'category' => 'nullable|string|max:255',
+            'tags' => 'nullable|array',
+            'tags.*' => 'string|max:255',
+            'is_template' => 'boolean',
         ]);
 
+        // Update project with validated data
         $project->update($validated);
 
-        return redirect()->route('projects.index')
+        // Handle attachments if any
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $path = $file->store('project-attachments');
+                $project->addAttachment(
+                    $file->getClientOriginalName(),
+                    $path,
+                    $file->getMimeType()
+                );
+            }
+        }
+
+        return redirect()->route('projects.show', $project)
             ->with('success', 'Project updated successfully.');
     }
 
     public function destroy(Project $project)
     {
-        $project->delete();
+        // Delete all attachments
+        if ($project->attachments) {
+            foreach ($project->attachments as $attachment) {
+                Storage::delete($attachment['path']);
+            }
+        }
 
+        $project->delete();
         return redirect()->route('projects.index')
             ->with('success', 'Project deleted successfully.');
+    }
+
+    public function addAttachment(Request $request, Project $project)
+    {
+        try {
+            // Validate Cloudinary credentials
+            if (!config('cloudinary.cloud') || !config('cloudinary.key') || !config('cloudinary.secret')) {
+                throw new \Exception('Cloudinary credentials are not properly configured.');
+            }
+
+            $request->validate([
+                'file' => 'required|file|max:10240', // 10MB max
+            ]);
+
+            $file = $request->file('file');
+            
+            // Upload to Cloudinary using storage driver
+            $path = Storage::disk('cloudinary')->putFile('project-attachments', $file);
+            
+            $project->addAttachment(
+                $file->getClientOriginalName(),
+                $path,
+                $file->getMimeType()
+            );
+
+            // Load the project with its attachments
+            $project->load('attachments');
+
+            return back()->with([
+                'project' => $project,
+                'success' => 'File attached successfully.'
+            ]);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to upload file: ' . $e->getMessage());
+        }
+    }
+
+    public function removeAttachment(Project $project, int $index)
+    {
+        try {
+            $attachments = $project->attachments;
+            if (isset($attachments[$index])) {
+                // Delete from Cloudinary
+                Storage::disk('cloudinary')->delete($attachments[$index]['path']);
+                
+                $project->removeAttachment($index);
+                return back()->with('success', 'File removed successfully.');
+            }
+
+            return back()->with('error', 'File not found.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to delete file: ' . $e->getMessage());
+        }
+    }
+
+    public function addTag(Request $request, Project $project)
+    {
+        $request->validate([
+            'tag' => 'required|string|max:255',
+        ]);
+
+        $project->addTag($request->tag);
+        return back()->with('success', 'Tag added successfully.');
+    }
+
+    public function removeTag(Project $project, string $tag)
+    {
+        $project->removeTag($tag);
+        return back()->with('success', 'Tag removed successfully.');
+    }
+
+    public function duplicateAsTemplate(Project $project)
+    {
+        $template = $project->duplicateAsTemplate();
+        return redirect()->route('projects.show', $template)
+            ->with('success', 'Project duplicated as template successfully.');
+    }
+
+    public function updateBudget(Request $request, Project $project)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:0',
+        ]);
+
+        $project->updateSpentBudget($request->amount);
+        return back()->with('success', 'Budget updated successfully.');
+    }
+
+    public function calculateProgress(Project $project)
+    {
+        $project->calculateProgress();
+        return back()->with('success', 'Project progress updated successfully.');
     }
 } 

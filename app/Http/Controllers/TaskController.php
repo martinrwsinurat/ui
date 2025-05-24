@@ -62,46 +62,38 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'project_id' => 'required|exists:projects,id',
-            'assigned_to' => 'required|exists:users,id',
+            'assigned_to' => 'nullable|exists:users,id',
             'status' => 'required|in:todo,in_progress,completed',
             'due_date' => 'required|date',
         ]);
 
-        Task::create($validated);
+        $task = Task::create($validated);
 
-        return redirect()->route('tasks.index')
+        return redirect()->route('tasks.show', $task)
             ->with('success', 'Task created successfully.');
     }
 
     public function show(Task $task)
     {
-        $task->load(['project', 'assignee']);
-
+        $task->load(['project', 'assignee', 'comments.user', 'attachments.comments.user']);
         return Inertia::render('Tasks/Show', [
-            'task' => [
-                'id' => $task->id,
-                'title' => $task->title,
-                'description' => $task->description,
-                'status' => $task->status,
-                'due_date' => $task->due_date,
-                'project' => [
-                    'id' => $task->project->id,
-                    'name' => $task->project->name,
-                ],
-                'assignee' => $task->assignee ? [
-                    'id' => $task->assignee->id,
-                    'name' => $task->assignee->name,
-                ] : null,
-            ],
+            'task' => $task,
+            'auth' => [
+                'user' => auth()->user()
+            ]
         ]);
     }
 
     public function edit(Task $task)
     {
+        $task->load(['project', 'assignee', 'comments.user', 'attachments.comments.user']);
         return Inertia::render('Tasks/Edit', [
             'task' => $task,
-            'users' => User::select('id', 'name')->get(),
-            'projects' => Project::select('id', 'name')->get(),
+            'projects' => Project::all(),
+            'users' => User::all(),
+            'auth' => [
+                'user' => auth()->user()
+            ]
         ]);
     }
 
