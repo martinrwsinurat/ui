@@ -91,25 +91,39 @@ export function ProjectAttachments({
         e.preventDefault();
         if (!data.file) return;
 
+        console.log("Starting file upload...", {
+            file: data.file.name,
+            size: data.file.size,
+            type: data.file.type,
+        });
+
         post(route("projects.attachments.store", projectId), {
             forceFormData: true,
             preserveScroll: true,
             onSuccess: (page) => {
+                console.log("Upload response:", page);
                 const props = page.props as PageProps;
                 if (props.project?.attachments) {
+                    console.log(
+                        "Updating attachments:",
+                        props.project.attachments
+                    );
                     setLocalAttachments(props.project.attachments);
+                    toast.success("File uploaded successfully");
+                    setData("file", null);
+                    // Reset file input
+                    const fileInput = document.querySelector(
+                        'input[type="file"]'
+                    ) as HTMLInputElement;
+                    if (fileInput) fileInput.value = "";
+                } else {
+                    console.warn("No attachments in response:", props);
+                    toast.error("Failed to update attachments list");
                 }
-                toast.success("File uploaded successfully");
-                setData("file", null);
-                // Reset file input
-                const fileInput = document.querySelector(
-                    'input[type="file"]'
-                ) as HTMLInputElement;
-                if (fileInput) fileInput.value = "";
             },
             onError: (errors) => {
+                console.error("Upload failed:", errors);
                 toast.error(errors.file || "Failed to upload file");
-                console.error("Upload errors:", errors);
             },
         });
     };

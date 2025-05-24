@@ -145,24 +145,56 @@ class ProjectController extends Controller
             ]);
 
             $file = $request->file('file');
+            \Log::info('File upload attempt', [
+                'filename' => $file->getClientOriginalName(),
+                'size' => $file->getSize(),
+                'mime' => $file->getMimeType()
+            ]);
             
             // Upload to Cloudinary using storage driver
             $path = Storage::disk('cloudinary')->putFile('project-attachments', $file);
+            \Log::info('File uploaded to Cloudinary', ['path' => $path]);
             
             $project->addAttachment(
                 $file->getClientOriginalName(),
                 $path,
                 $file->getMimeType()
             );
+            \Log::info('Attachment added to project', [
+                'project_id' => $project->id,
+                'attachments' => $project->attachments
+            ]);
 
             // Load the project with its attachments
             $project->load('attachments');
+            \Log::info('Project loaded with attachments', [
+                'project_id' => $project->id,
+                'attachments_count' => count($project->attachments)
+            ]);
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'project' => $project,
+                    'message' => 'File attached successfully.'
+                ]);
+            }
 
             return back()->with([
                 'project' => $project,
                 'success' => 'File attached successfully.'
             ]);
         } catch (\Exception $e) {
+            \Log::error('File upload failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'error' => 'Failed to upload file: ' . $e->getMessage()
+                ], 500);
+            }
+
             return back()->with('error', 'Failed to upload file: ' . $e->getMessage());
         }
     }
