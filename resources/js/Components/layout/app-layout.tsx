@@ -1,8 +1,8 @@
 import { ReactNode } from "react";
 import { Navigation } from "./navigation";
-import { useIsMobile } from "@/components/hooks/use-mobile";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/Components/hooks/use-mobile";
+import { Sheet, SheetContent, SheetTrigger } from "@/Components/ui/sheet";
+import { Button } from "@/Components/ui/button";
 import { Menu } from "lucide-react";
 
 interface AppLayoutProps {

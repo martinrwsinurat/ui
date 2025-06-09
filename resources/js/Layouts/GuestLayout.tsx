@@ -11,12 +11,12 @@ export default function GuestLayout({ children }: Props) {
             <div>
                 <Link href="/">
                     <h1 className="text-2xl font-bold text-gray-900">
-                        Task Management
+                        Soft Manage UI
                     </h1>
                 </Link>
             </div>
 
-            <div className="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
+            <div className="w-full sm:max-w-3xl mt-10 px-10 py-9 bg-white shadow-md overflow-hidden sm:rounded-lg">
                 {children}
             </div>
         </div>

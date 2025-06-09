@@ -52,6 +52,7 @@
         "cloudinary-react": "^1.8.1",
         "clsx": "^2.1.1",
         "date-fns": "^3.0.0",
+        "framer-motion": "^12.16.0",
         "lucide-react": "^0.511.0",
         "react-datepicker": "^8.3.0",
         "react-day-picker": "^8.10.1",

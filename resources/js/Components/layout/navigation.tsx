@@ -1,6 +1,6 @@
 import { Link } from "@inertiajs/react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import {
     LayoutDashboard,
     FolderKanban,
@@ -9,7 +9,7 @@ import {
     Settings,
     Plus,
 } from "lucide-react";
-import { useIsMobile } from "@/components/hooks/use-mobile";
+import { useIsMobile } from "@/Components/hooks/use-mobile";
 
 interface NavigationProps {
     className?: string;

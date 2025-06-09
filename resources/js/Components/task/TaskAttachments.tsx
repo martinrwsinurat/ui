@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
 import { useForm } from "@inertiajs/react";
 import { toast } from "sonner";
 import {
@@ -17,11 +17,11 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "@/components/ui/table";
-import { router, usePage } from "@inertiajs/react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
-import { Textarea } from "../ui/textarea";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+} from "@/Components/ui/table";
+import { router } from "@inertiajs/react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
+import { Textarea } from "@/Components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface TaskAttachment {
     id: number;
@@ -91,6 +91,7 @@ export function TaskAttachments({
     // Function to get full Cloudinary URL
     const getFullCloudinaryUrl = (path: string) => {
         if (path.startsWith("http")) return path;
+        // @ts-ignore
         const cloudName = window.CLOUDINARY_CLOUD_NAME || "dtpflpunp";
         return `https://res.cloudinary.com/${cloudName}/image/upload/${path}`;
     };
@@ -125,6 +126,7 @@ export function TaskAttachments({
             return;
         }
 
+        // @ts-ignore
         post(route("tasks.attachments.store", taskId), {
             preserveScroll: true,
             onSuccess: (page) => {
@@ -149,6 +151,7 @@ export function TaskAttachments({
         if (isNewTask) return;
         if (!confirm("Are you sure you want to delete this file?")) return;
 
+        // @ts-ignore
         router.delete(
             route("tasks.attachments.destroy", [taskId, attachmentId]),
             {
@@ -187,15 +190,28 @@ export function TaskAttachments({
             return;
         }
 
+        // @ts-ignore
         post(
             route("tasks.attachments.comments.store", [
                 taskId,
                 selectedAttachment.id,
             ]),
             {
-                onSuccess: () => {
+                onSuccess: (page) => {
                     toast.success("Comment added successfully");
                     commentForm.setData("content", "");
+                    // Update comments in selectedAttachment
+                    const props = page.props as PageProps;
+                    if (props.attachment) {
+                        setSelectedAttachment(props.attachment);
+                        setLocalAttachments((prev) =>
+                            prev.map((att) =>
+                                att.id === props.attachment!.id
+                                    ? props.attachment!
+                                    : att
+                            )
+                        );
+                    }
                 },
                 onError: () => {
                     toast.error("Failed to add comment");
@@ -448,7 +464,7 @@ export function TaskAttachments({
                                     >
                                         <Avatar>
                                             <AvatarImage
-                                                src={comment.user.avatar}
+                                                src={comment.user.avatar || undefined}
                                                 alt={comment.user.name}
                                             />
                                             <AvatarFallback>

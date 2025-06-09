@@ -1,17 +1,17 @@
 import { PropsWithChildren } from "react";
 import { User } from "@/types";
 import { Link } from "@inertiajs/react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { Card } from "@/Components/ui/card";
 import { Toaster } from "sonner";
 import { Head } from "@inertiajs/react";
-import { AppSidebar } from "@/components/app-sidebar";
+import { AppSidebar } from "@/Components/app-sidebar";
 import {
     SidebarInset,
     SidebarProvider,
     SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
+import { Separator } from "@/Components/ui/separator";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -19,7 +19,7 @@ import {
     BreadcrumbList,
     BreadcrumbPage,
     BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from "@/Components/ui/breadcrumb";
 
 interface Props {
     user: User;

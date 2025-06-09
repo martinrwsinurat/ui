@@ -1,6 +1,6 @@
 import { PageProps } from "@/types";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import {
     FolderKanban,
     CheckSquare,
@@ -17,9 +17,9 @@ import {
     Mail,
 } from "lucide-react";
 import { Link } from "@inertiajs/react";
-import { Button } from "@/components/ui/button";
-import { ChartComp } from "@/components/ui/ChartComp";
-import { Progress } from "@/components/ui/progress";
+import { Button } from "@/Components/ui/button";
+import { ChartComp } from "@/Components/ui/ChartComp";
+import { Progress } from "@/Components/ui/progress";
 import {
     Table,
     TableBody,
@@ -27,7 +27,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "@/components/ui/table";
+} from "@/Components/ui/table";
 
 interface DashboardProps extends PageProps {
     stats: {
@@ -83,50 +83,17 @@ export default function Dashboard({
             <div className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">
-                        Dashboard Overview
+                        Soft Manage UI
                     </h1>
                     <p className="mt-1 text-sm text-gray-500">
-                        Welcome back! Here's what's happening with your
-                        projects.
+                        Kerja kerja kerja!!
                     </p>
                 </div>
                 <Button asChild>
                     <Link href={route("projects.create")}>
-                        <FolderKanban className="mr-2 h-4 w-4" />
-                        New Project
+                        {/* <FolderKanban className="mr-2 h-4 w-4" /> */}
+                        projek baru
                     </Link>
-                </Button>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <Button
-                    variant="outline"
-                    className="h-auto py-4 flex flex-col items-center gap-2"
-                >
-                    <Plus className="h-6 w-6" />
-                    <span>New Task</span>
-                </Button>
-                <Button
-                    variant="outline"
-                    className="h-auto py-4 flex flex-col items-center gap-2"
-                >
-                    <FileText className="h-6 w-6" />
-                    <span>New Document</span>
-                </Button>
-                <Button
-                    variant="outline"
-                    className="h-auto py-4 flex flex-col items-center gap-2"
-                >
-                    <MessageSquare className="h-6 w-6" />
-                    <span>New Message</span>
-                </Button>
-                <Button
-                    variant="outline"
-                    className="h-auto py-4 flex flex-col items-center gap-2"
-                >
-                    <Settings className="h-6 w-6" />
-                    <span>Settings</span>
                 </Button>
             </div>
 
@@ -140,18 +107,18 @@ export default function Dashboard({
                             </div>
                             <div className="ml-5 w-0 flex-1">
                                 <dt className="text-sm font-medium text-muted-foreground truncate">
-                                    Active Projects
+                                    projek aktif
                                 </dt>
                                 <dd className="flex items-baseline">
                                     <div className="text-2xl font-semibold text-foreground">
                                         {stats.activeProjects}
                                     </div>
                                     <div className="ml-2 flex items-baseline text-sm font-semibold text-green-600">
-                                        <TrendingUp className="self-center flex-shrink-0 h-5 w-5 text-green-500" />
+                                        {/* <TrendingUp className="self-center flex-shrink-0 h-5 w-5 text-green-500" /> */}
                                         <span className="sr-only">
                                             Increased by
                                         </span>
-                                        12%
+                                        
                                     </div>
                                 </dd>
                             </div>
@@ -167,18 +134,18 @@ export default function Dashboard({
                             </div>
                             <div className="ml-5 w-0 flex-1">
                                 <dt className="text-sm font-medium text-muted-foreground truncate">
-                                    Tasks Due Soon
+                                    Tugas selanjutnya
                                 </dt>
                                 <dd className="flex items-baseline">
                                     <div className="text-2xl font-semibold text-foreground">
                                         {stats.tasksDueSoon}
                                     </div>
                                     <div className="ml-2 flex items-baseline text-sm font-semibold text-red-600">
-                                        <TrendingUp className="self-center flex-shrink-0 h-5 w-5 text-red-500 rotate-180" />
+                                        {/* <TrendingUp className="self-center flex-shrink-0 h-5 w-5 text-red-500 rotate-180" /> */}
                                         <span className="sr-only">
                                             Increased by
                                         </span>
-                                        8%
+                                        5
                                     </div>
                                 </dd>
                             </div>
@@ -194,18 +161,18 @@ export default function Dashboard({
                             </div>
                             <div className="ml-5 w-0 flex-1">
                                 <dt className="text-sm font-medium text-muted-foreground truncate">
-                                    Tasks Completed
+                                    selesai
                                 </dt>
                                 <dd className="flex items-baseline">
                                     <div className="text-2xl font-semibold text-foreground">
                                         {stats.completedTasks}
                                     </div>
                                     <div className="ml-2 flex items-baseline text-sm font-semibold text-green-600">
-                                        <TrendingUp className="self-center flex-shrink-0 h-5 w-5 text-green-500" />
+                                        {/* <TrendingUp className="self-center flex-shrink-0 h-5 w-5 text-green-500" /> */}
                                         <span className="sr-only">
                                             Increased by
                                         </span>
-                                        33%
+                                        25
                                     </div>
                                 </dd>
                             </div>
@@ -221,18 +188,18 @@ export default function Dashboard({
                             </div>
                             <div className="ml-5 w-0 flex-1">
                                 <dt className="text-sm font-medium text-muted-foreground truncate">
-                                    Team Members
+                                    Tim
                                 </dt>
                                 <dd className="flex items-baseline">
                                     <div className="text-2xl font-semibold text-foreground">
                                         {stats.teamMembers}
                                     </div>
                                     <div className="ml-2 flex items-baseline text-sm font-semibold text-green-600">
-                                        <TrendingUp className="self-center flex-shrink-0 h-5 w-5 text-green-500" />
+                                        {/* <TrendingUp className="self-center flex-shrink-0 h-5 w-5 text-green-500" /> */}
                                         <span className="sr-only">
                                             Increased by
                                         </span>
-                                        25%
+
                                     </div>
                                 </dd>
                             </div>
@@ -247,55 +214,28 @@ export default function Dashboard({
                     <ChartComp />
                 </Card>
 
-                {/* Recent Tasks */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Recent Tasks</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            {recentTasks.map((task) => (
-                                <div
-                                    key={task.id}
-                                    className="flex items-center justify-between"
-                                >
-                                    <div className="space-y-1">
-                                        <p className="text-sm font-medium leading-none">
-                                            {task.title}
-                                        </p>
-                                        <p className="text-sm text-muted-foreground">
-                                            {task.project}
-                                        </p>
-                                    </div>
-                                    <div className="text-sm text-muted-foreground">
-                                        {task.dueDate}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
+                {/* Recent Tasks - Dihapus agar tidak tampil */}
             </div>
 
             {/* Team Members Table */}
             <Card className="mb-8">
                 <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>Team Members</CardTitle>
+                    <CardTitle>Anggota Basis</CardTitle>
                     <Button variant="outline" size="sm">
                         <UserPlus className="h-4 w-4 mr-2" />
-                        Add Member
+                        Tambah Anggota
                     </Button>
                 </CardHeader>
                 <CardContent>
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Name</TableHead>
+                                <TableHead>Nama</TableHead>
                                 <TableHead>Role</TableHead>
                                 <TableHead>Email</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead className="text-right">
-                                    Actions
+                                    
                                 </TableHead>
                             </TableRow>
                         </TableHeader>
@@ -346,7 +286,7 @@ export default function Dashboard({
             {/* Upcoming Deadlines */}
             <Card className="mb-8">
                 <CardHeader>
-                    <CardTitle>Upcoming Deadlines</CardTitle>
+                    <CardTitle>Batas </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">

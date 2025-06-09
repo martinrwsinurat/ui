@@ -8,10 +8,9 @@ import {
     Plus,
 } from "lucide-react";
 
-import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
-import { NavUser } from "@/components/nav-user";
-import { TeamSwitcher } from "@/components/team-switcher";
+import { NavMain } from "@/Components/nav-main";
+import { NavProjects } from "@/Components/nav-projects";
+import { NavUser } from "@/Components/nav-user";
 import {
     Sidebar,
     SidebarContent,
@@ -23,79 +22,67 @@ import {
 // This is sample data.
 const data = {
     user: {
-        name: "shadcn",
-        email: "m@example.com",
-        avatar: "/avatars/shadcn.jpg",
+        name: "",
+        email: "",
+        avatar: "",
     },
-    teams: [
-        {
-            name: "Acme Inc",
-            logo: FolderKanban,
-            plan: "Enterprise",
-        },
-        {
-            name: "Acme Corp.",
-            logo: CheckSquare,
-            plan: "Startup",
-        },
-    ],
     navMain: [
         {
-            title: "Dashboard",
+            title: "History",
             url: "/dashboard",
             icon: LayoutDashboard,
             isActive: true,
         },
         {
-            title: "Projects",
+            title: "projek",
             url: "/projects",
             icon: FolderKanban,
             items: [
                 {
-                    title: "All Projects",
+                    title: "semua projek",
                     url: "/projects",
                 },
                 {
-                    title: "Create Project",
+                    title: "mulai projek",
                     url: "/projects/create",
                 },
             ],
         },
         {
-            title: "Tasks",
+            title: "Pekerjaan",
             url: "/tasks",
             icon: CheckSquare,
             items: [
                 {
-                    title: "All Tasks",
+                    title: "Semua Pekerjaan",
                     url: "/tasks",
                 },
                 {
-                    title: "Create Task",
+                    title: "Membuat pekerjaan",
                     url: "/tasks/create",
                 },
             ],
         },
         {
-            title: "Team",
+            title: "Tim",
             url: "/team",
             icon: Users,
         },
         {
-            title: "Settings",
+            title: "Pengaturan",
             url: "/settings",
             icon: Settings2,
             items: [
                 {
-                    title: "Profile",
+                    title: "Profil",
                     url: "/profile",
                 },
                 {
-                    title: "Team Settings",
+                    title: "Pengaturan Tim",
                     url: "/team/settings",
                 },
                 {
-                    title: "Project Settings",
+                    title: "pengaturan projek",
                     url: "/projects/settings",
                 },
             ],
@@ -103,12 +90,12 @@ const data = {
     ],
     projects: [
         {
-            name: "Active Projects",
+            name: "projek aktif",
             url: "/projects?status=active",
             icon: FolderKanban,
         },
         {
-            name: "Completed Projects",
+            name: "Projek Selesai",
             url: "/projects?status=completed",
             icon: CheckSquare,
         },
@@ -116,18 +103,51 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+    // Fungsi logout yang benar: POST ke /logout lalu redirect ke /login
+    const handleLogout = async () => {
+        await fetch('/logout', {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '',
+            },
+        });
+        window.location.href = "/login";
+    };
+
     return (
-        <Sidebar collapsible="icon" {...props}>
+        <Sidebar
+            collapsible="icon"
+            className="bg-orange-500 text-white"
+            {...props}
+        >
             <SidebarHeader>
-                <TeamSwitcher teams={data.teams} />
+                {/* Tampilkan user di atas kiri */}
+                <div className="flex items-center gap-3 py-4 px-2">
+                    <img
+                        src={data.user.avatar}
+                        alt={data.user.name}
+                        className="w-10 h-10 rounded-full object-cover border-2 border-white"
+                    />
+                    <div>
+                        <div className="font-semibold text-white">{data.user.name}</div>
+                        <div className="text-xs text-white/80">{data.user.email}</div>
+                    </div>
+                </div>
             </SidebarHeader>
             <SidebarContent>
                 <NavMain items={data.navMain} />
                 <NavProjects projects={data.projects} />
             </SidebarContent>
-            <SidebarFooter>
-                <NavUser user={data.user} />
-            </SidebarFooter>
+            {/* Tombol Logout di bawah sidebar */}
+            <div className="p-4 mt-auto">
+                <button
+                    onClick={handleLogout}
+                    className="w-full py-2 px-4 rounded bg-white text-orange-500 font-semibold hover:bg-orange-100 transition"
+                >
+                    Keluar
+                </button>
+            </div>
             <SidebarRail />
         </Sidebar>
     );

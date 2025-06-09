@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
 import { useForm } from "@inertiajs/react";
 import { toast } from "sonner";
 import { FileIcon, TrashIcon, DownloadIcon, EyeIcon } from "lucide-react";
@@ -11,7 +11,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "@/components/ui/table";
+} from "@/Components/ui/table";
 import { router } from "@inertiajs/react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 
