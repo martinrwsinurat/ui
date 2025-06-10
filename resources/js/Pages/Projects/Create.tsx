@@ -1,6 +1,6 @@
 import React from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import {
     Card,
     CardContent,
@@ -8,10 +8,10 @@ import {
     CardFooter,
     CardHeader,
     CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+} from "@/Components/ui/card";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { Textarea } from "@/Components/ui/textarea";
 import { Link, useForm, Head } from "@inertiajs/react";
 import { ArrowLeft } from "lucide-react";
 import { User } from "@/types";
@@ -21,10 +21,10 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select";
-import { DatePickerWithRange } from "@/components/ui/date-picker-with-range";
+} from "@/Components/ui/select";
+import { DatePickerWithRange } from "@/Components/ui/date-picker-with-range";
 import { DateRange } from "react-day-picker";
-import { TagInput } from "@/components/project/TagInput";
+import { TagInput } from "@/Components/project/TagInput";
 
 interface Props {
     users: User[];
@@ -44,7 +44,7 @@ export default function Create({ users, auth }: Props) {
         budget: "",
         category: "",
         tags: [] as string[],
-        is_template: false,
+        is_template: false as boolean,
         user_id: auth.user.id.toString(),
     });
 
@@ -68,34 +68,36 @@ export default function Create({ users, auth }: Props) {
     };
 
     return (
-        <AuthenticatedLayout user={auth.user}>
+        <AuthenticatedLayout>
             <Head title="Create Project" />
-
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div
+                className="min-h-screen flex items-center justify-center py-12"
+                style={{
+                    background: "linear-gradient(135deg, #FFD6A0 0%, #FFB86C 100%)",
+                    minHeight: "100vh",
+                }}
+            >
+                <div className="w-full max-w-3xl mx-auto sm:px-6 lg:px-8">
                     <div className="mb-6">
                         <Button variant="ghost" asChild className="mb-4">
                             <Link href="/projects">
                                 <ArrowLeft className="mr-2 h-4 w-4" />
-                                Back to Projects
+                                Kembali
                             </Link>
                         </Button>
                         <h1 className="text-2xl font-semibold">
-                            Create Project
+                            Buat projek
                         </h1>
                     </div>
 
                     <Card>
                         <form onSubmit={handleSubmit}>
                             <CardHeader>
-                                <CardTitle>Project Details</CardTitle>
-                                <CardDescription>
-                                    Fill in the project details below.
-                                </CardDescription>
+                                <CardTitle>Detail data</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="name">Project Name</Label>
+                                    <Label htmlFor="name">Nama Tugas</Label>
                                     <Input
                                         id="name"
                                         value={data.name}
@@ -113,7 +115,7 @@ export default function Create({ users, auth }: Props) {
 
                                 <div className="space-y-2">
                                     <Label htmlFor="description">
-                                        Description
+                                        Deskripsi pengerjaan
                                     </Label>
                                     <Textarea
                                         id="description"
@@ -135,7 +137,7 @@ export default function Create({ users, auth }: Props) {
 
                                 <div className="space-y-2">
                                     <Label htmlFor="user_id">
-                                        Project Manager
+                                        Penanggung jawab
                                     </Label>
                                     <Select
                                         value={data.user_id}
@@ -165,7 +167,7 @@ export default function Create({ users, auth }: Props) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label>Project Timeline</Label>
+                                    <Label>Lama Pengerjaan</Label>
                                     <DatePickerWithRange
                                         date={dateRange}
                                         onDateChange={handleDateRangeChange}
@@ -179,11 +181,11 @@ export default function Create({ users, auth }: Props) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="budget">Budget</Label>
+                                    <Label htmlFor="budget">Biaya pengerjaan</Label>
                                     <Input
                                         id="budget"
                                         type="number"
-                                        step="0.01"
+                                        step="100000"
                                         value={data.budget}
                                         onChange={(e) =>
                                             setData("budget", e.target.value)
@@ -197,7 +199,7 @@ export default function Create({ users, auth }: Props) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="category">Category</Label>
+                                    <Label htmlFor="category">Kategori </Label>
                                     <Input
                                         id="category"
                                         value={data.category}
@@ -212,7 +214,7 @@ export default function Create({ users, auth }: Props) {
                                     )}
                                 </div>
 
-                                <TagInput
+                                {/* <TagInput
                                     tags={data.tags}
                                     onTagsChange={handleTagsChange}
                                 />
@@ -220,10 +222,10 @@ export default function Create({ users, auth }: Props) {
                                     <p className="text-sm text-red-500">
                                         {errors.tags}
                                     </p>
-                                )}
+                                )} */}
 
                                 <div className="space-y-2">
-                                    <Label>Template</Label>
+    
                                     <div className="flex items-center space-x-2">
                                         <input
                                             type="checkbox"
@@ -241,19 +243,19 @@ export default function Create({ users, auth }: Props) {
                                             htmlFor="is_template"
                                             className="text-sm font-normal"
                                         >
-                                            Save as template
+                                            Simpan otomatis
                                         </Label>
                                     </div>
                                 </div>
                             </CardContent>
                             <CardFooter className="flex justify-end space-x-4">
                                 <Button variant="outline" asChild>
-                                    <Link href="/projects">Cancel</Link>
+                                    <Link href="/projects">Batal</Link>
                                 </Button>
                                 <Button type="submit" disabled={processing}>
                                     {processing
                                         ? "Creating..."
-                                        : "Create Project"}
+                                        : "Simpan projek"}
                                 </Button>
                             </CardFooter>
                         </form>
