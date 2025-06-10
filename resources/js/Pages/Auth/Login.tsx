@@ -27,51 +27,51 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-200 via-orange-300 to-orange-400">
             <Head title="Log in" />
-            <div className="bg-white/80 shadow-xl rounded-2xl p-8 w-full max-w-md animate-fade-in border border-gray-200">
+            <div className="bg-white/90 shadow-2xl rounded-2xl p-8 w-full max-w-md animate-fade-in border border-orange-200">
                 <div className="mb-6 text-center">
                     {/* <img src="/logo.png" alt="Logo" className="mx-auto w-16 h-16 mb-2" /> */}
-                    <h1 className="text-3xl font-bold text-gray-700 mb-1">Soft Manage UI</h1>
-                    <p className="text-gray-400">Silahkan Login Masukkan email dan password</p>
-                    <p className="text-gray-400">Mari Membuat projek yang keren </p>
-                    <p className="text-gray-400">Bersama Soft Manage UI </p>
-                    <p className="text-gray-400">Gasskeun cuiii!! </p>
+                    <h1 className="text-3xl font-bold text-black mb-1">Soft Manage UI</h1>
+                    <p className="text-black">Silahkan Login Masukkan email dan password</p>
+                    <p className="text-black">Mari Membuat projek yang keren </p>
+                    <p className="text-black">Bersama Soft Manage UI </p>
+                    <p className="text-black">Gasskeun cuiii!! </p>
                 </div>
                 <form onSubmit={submit}>
                     <div>
-                        <InputLabel htmlFor="email" value="EMAIL" className="text-gray-600" />
+                        <InputLabel htmlFor="email" value="EMAIL" className="text-black" />
                         <TextInput
                             id="email"
                             type="email"
                             name="email"
                             value={data.email}
-                            className="mt-1 block w-full bg-gray-100 border border-gray-300 focus:border-gray-400 focus:ring-gray-400"
+                            className="mt-1 block w-full bg-orange-50 border border-orange-300 focus:border-orange-400 focus:ring-orange-400 text-black"
                             autoComplete="username"
                             isFocused={true}
                             placeholder="akun@gmail.com"
                             onChange={(e) => setData("email", e.target.value)}
                         />
-                        <InputError message={errors.email} className="mt-2" />
+                        <InputError message={errors.email} className="mt-2 text-orange-600" />
                     </div>
 
                     <div className="mt-4">
-                        <InputLabel htmlFor="password" value="KATA SANDI" className="text-gray-600" />
+                        <InputLabel htmlFor="password" value="KATA SANDI" className="text-black" />
                         <div className="relative">
                             <TextInput
                                 id="password"
                                 type={showPassword ? "text" : "password"}
                                 name="password"
                                 value={data.password}
-                                className="mt-1 block w-full bg-gray-100 border border-gray-300 focus:border-gray-400 focus:ring-gray-400 pr-10"
+                                className="mt-1 block w-full bg-orange-50 border border-orange-300 focus:border-orange-400 focus:ring-orange-400 pr-10 text-black"
                                 autoComplete="current-password"
-                                placeholder="passwort"
+                                placeholder="password"
                                 onChange={(e) => setData("password", e.target.value)}
                             />
                             <button
                                 type="button"
                                 tabIndex={-1}
-                                className="absolute inset-y-0 right-2 flex items-center text-gray-400 hover:text-gray-600"
+                                className="absolute inset-y-0 right-2 flex items-center text-orange-400 hover:text-orange-600"
                                 onClick={() => setShowPassword((v) => !v)}
                             >
                                 {showPassword ? (
@@ -89,7 +89,7 @@ export default function Login() {
                                 )}
                             </button>
                         </div>
-                        <InputError message={errors.password} className="mt-2" />
+                        <InputError message={errors.password} className="mt-2 text-orange-600" />
                     </div>
 
                     <div className="block mt-4">
@@ -101,9 +101,9 @@ export default function Login() {
                                 onChange={(e) =>
                                     setData("remember", e.target.checked ? "true" : "false")
                                 }
-                                className="rounded border-gray-300 text-gray-600 shadow-sm focus:ring-gray-400"
+                                className="rounded border-orange-300 text-orange-600 shadow-sm focus:ring-orange-400"
                             />
-                            <span className="ms-2 text-sm text-gray-600">
+                            <span className="ms-2 text-sm text-black">
                                 Ingat Saya
                             </span>
                         </label>
@@ -112,12 +112,12 @@ export default function Login() {
                     <div className="flex items-center justify-between mt-6">
                         <Link
                             href={route("password.request")}
-                            className="underline text-sm text-gray-400 hover:text-gray-600 transition"
+                            className="underline text-sm text-black hover:text-orange-600 transition"
                         >
                             Lupa password?
                         </Link>
                         <PrimaryButton
-                            className="ms-4 px-6 py-2 bg-gray-400 hover:bg-gray-500 transition-all duration-200 shadow rounded-lg text-white font-semibold"
+                            className="ms-4 px-6 py-2 bg-gradient-to-r from-orange-400 to-orange-600 hover:from-orange-500 hover:to-orange-700 transition-all duration-200 shadow rounded-lg text-white font-semibold"
                             disabled={processing}
                         >
                             MASUK
@@ -125,10 +125,10 @@ export default function Login() {
                     </div>
                 </form>
                 <div className="mt-6 text-center">
-                    <span className="text-black-400 text-sm">Belum punya akun?</span>
+                    <span className="text-black text-sm">Belum punya akun?</span>
                     <Link
                         href={route("register")}
-                        className="ml-2 text-black-600 font-semibold hover:underline"
+                        className="ml-2 text-black font-semibold hover:underline"
                     >
                         Buat akun 
                     </Link>

@@ -25,3 +25,5 @@ return new class extends Migration
         Schema::dropIfExists('tasks');
     }
 }; 
+
+// membuat tabel tasks dengan kolom id, title, description, project_id, assigned_to, status, due_date, timestamps
